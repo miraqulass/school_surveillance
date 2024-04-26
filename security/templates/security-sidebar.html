@@ -1,0 +1,10 @@
+<div class="sidebar">
+  <h2>security personnel</h2>
+  <a href="{{ url_for('security.security_recorded_motion') }}" {% if active_page=='security_recorded_motion'
+    %}class="active" {% endif %}>Recorded Motion</a>
+  <a href="{{ url_for('security.security_live_feed') }}" {% if active_page=='security_live_feed' %}class="active" {%
+    endif %}>Live Feed</a>
+  <a href="{{ url_for('security.security_students_list') }}" {% if active_page=='security_students_list'
+    %}class="active" {% endif %}>Student's List</a>
+  <a href="{{ url_for('logout') }}">logout</a>
+</div>

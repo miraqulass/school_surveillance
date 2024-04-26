@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin-styles.css') }}">
+    <style>
+        th {
+            background-color: #56b2ef;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        tr {
+            height: 15px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+        }
+
+        button.apply {
+            background-color: #297bb2;
+            justify-content: end;
+            height: 30px;
+            border: none;
+            margin: 5px;
+        }
+
+        button.add {
+            background-color: #56b2ef;
+            justify-content: end;
+            height: 30px;
+            border: none;
+            margin: 5px;
+        }
+
+        button.delete {
+            background-color: red;
+            border: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            border: black;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-container {
+            margin: 10px;
+        }
+
+        .input-container input {
+            width: 100%;
+            height: 30px;
+            box-sizing: border-box;
+        }
+
+        .buttons-div {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        button.ok {
+            width: 50px;
+            height: 25px;
+            border: none;
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        button.edit {
+            background-color: grey;
+            border: none;
+        }
+
+        button.cancel {
+            height: 25px;
+            width: 55px;
+            border: none;
+            background-color: #e74c3c;
+            margin-left: 20px;
+            margin-right: 10px;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'sidebar.html' %}
+
+    <div class="content">
+        <div class="buttons-div">
+            <button class="add" onclick="showAddUserPopup()">Add User</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <h2>User</h2>
+            <label>
+                <input type="radio" name="userType" value="admin"> Admin
+            </label>
+            <label>
+                <input type="radio" name="userType" value="security"> Security Personnel
+            </label>
+            <div class="input-container">
+                <label>Full Name:</label>
+                <input type="text" id="fullName">
+            </div>
+            <div class="input-container">
+                <label>Username:</label>
+                <input type="text" id="username">
+            </div>
+            <div class="input-container">
+                <label>Email:</label>
+                <input class="email-input" type="email" id="email">
+            </div>
+            <div class="input-container">
+                <label>Password:</label>
+                <input type="password" id="password">
+            </div>
+            <div class="buttons-div">
+                <button class="ok" onclick="addUser()">OK</button>
+                <button class="cancel" onclick="hideAddUserPopup()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <h2>Edit User</h2>
+            <form id="editUserForm">
+                <input type="hidden" id="editUserId">
+                <input type="text" id="editFullName" placeholder="Full Name"><br>
+                <input type="text" id="editUsername" placeholder="Username"><br>
+                <input type="email" id="editEmail" placeholder="Email"><br>
+                <input type="password" id="editPassword" placeholder="Password"><br>
+                <input type="text" id="editUserType" placeholder="User Type"><br>
+                <div class="buttons-div">
+                    <button class="ok" type="submit">Update</button>
+                    <button class="cancel" onclick="closeEditUserModal()"" >Cancel</button>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+
+    <script>
+
+        function showAddUserPopup() {
+            var modal = document.getElementById("addUserModal");
+            modal.style.display = "block";
+        } 
+        function hideAddUserPopup() {
+                var modal = document.getElementById("addUserModal");
+            modal.style.display = "none";
+        } 
+        function getUsers() {
+            fetch('/users').then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user data');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('userTableBody').innerHTML = '';
+
+                data.users.forEach(user => {
+                    var row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${user.userID}</td>
+                        <td>${user.fullName}</td>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>
+
+                            <button class="edit"
+                                onclick="openEditUserModal(${user.userID},'${user.fullName}','${user.username}','${user.email}','${user.password}','${user.userType}')">Edit</button>
+                            <button class="delete" onclick="deleteUser(${user.userID})">Delete</button>
+                        </td>
+                        `;
+                    document.getElementById('userTableBody').appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching user data:', error);
+                var errorMessage = document.createElement('div');
+                errorMessage.textContent = 'Error fetching user data. Please try again.';
+                document.body.appendChild(errorMessage);
+            });
+        }
+
+        function deleteUser(userId) {
+            fetch(`/users/${userId}`, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete user');
+                    }
+                    getUsers();
+                })
+                .catch(error => {
+                    console.error('Error deleting user:', error);
+                });
+        }
+
+        function addUser() {
+            var userType = document.querySelector('input[name="userType"]:checked').value;
+            var fullName = document.getElementById("fullName").value;
+            var email = document.getElementById("email").value;
+            var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
+
+            // Prepare the user data
+            var userData = {
+                "fullName": fullName,
+                "email": email,
+                "userType": userType,
+                "username": username,
+                "password": password,
+                // You may need to add more fields like username and password if required
+            };
+
+            // Make a POST request to the /users endpoint
+            fetch('/add_user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // If user added successfully, hide the modal and reload the page to see the changes
+                        hideAddUserPopup();
+                        location.reload();
+                    } else {
+                        // If there was an error adding the user, display an error message
+                        console.error('Failed to add user');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function openEditUserModal(userId, fullName, username, email, password, userType) {
+            document.getElementById('editUserId').value = userId;
+            document.getElementById('editFullName').value = fullName;
+            document.getElementById('editUsername').value = username;
+            document.getElementById('editEmail').value = email;
+            document.getElementById('editPassword').value = password;
+            document.getElementById('editUserType').value = userType;
+
+            var modal = document.getElementById('editUserModal');
+            modal.style.display = 'block';
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('editUserId').value = '';
+            document.getElementById('editFullName').value = '';
+            document.getElementById('editUsername').value = '';
+            document.getElementById('editEmail').value = '';
+            document.getElementById('editPassword').value = '';
+            document.getElementById('editUserType').value = '';
+
+            var modal = document.getElementById('editUserModal');
+            modal.style.display = 'none';
+        }
+
+        document.getElementById('editUserForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            var userId = document.getElementById('editUserId').value;
+            var fullName = document.getElementById('editFullName').value;
+            var username = document.getElementById('editUsername').value;
+            var email = document.getElementById('editEmail').value;
+            var password = document.getElementById('editPassword').value;
+            var userType = document.getElementById('editUserType').value;
+
+            fetch(`/users/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fullName: fullName,
+                    username: username,
+                    email: email,
+                    password: password,
+                    userType: userType
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to update user');
+                    }
+                    closeEditUserModal();
+                    getUsers();
+                })
+                .catch(error => {
+                    console.error('Error updating user:', error);
+                });
+        });
+
+        window.onload = function () {
+            getUsers();
+        };
+
+    </script>
+</body>
+
+</html>

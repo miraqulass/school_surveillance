@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='security-styles.css') }}">
+    <style>
+        /* Style for the modal */
+        th {
+            background-color: #56b2ef;
+        }
+
+        table {
+            border-collapse: collapse;
+            /* Collapse borders into a single border */
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            /* Set border color to black */
+            padding: 8px;
+            /* Add padding for better spacing */
+        }
+
+        button.apply {
+            background-color: #297bb2;
+            justify-content: end;
+            height: 30px;
+            border: none;
+            margin: 5px;
+        }
+
+        button.add {
+            background-color: #56b2ef;
+            justify-content: end;
+            height: 25px;
+            width: 55px;
+            border: none;
+
+        }
+
+        button.delete {
+            height: 25px;
+            width: 55px;
+            background-color: red;
+            border: none;
+            margin-left: 8px;
+        }
+
+        .buttons-div {
+            margin: 5px;
+            display: flex;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'security-sidebar.html' %}
+
+    <div class="content">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Date and Time</th>
+                    <th>Log Status</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceTableBody">
+
+            </tbody>
+        </table>
+
+    </div>
+
+    <script>
+        function getAttendance() {
+            fetch('/attendance')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch attendance data');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('attendanceTableBody').innerHTML = '';
+
+                    data.attendance.forEach(att => {
+                        var row = document.createElement('tr');
+                        row.innerHTML = `
+                    <td>${att.userID}</td>
+                    <td>${att.fullName}</td>
+                    <td>${att.check_time}</td>
+                    <td>${att.status}</td>
+                                   `;
+                        document.getElementById('attendanceTableBody').appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching attendance data:', error);
+                    console.log(error);
+                    var errorMessage = document.createElement('div');
+                    errorMessage.textContent = 'Error fetching attendance data. Please try again.';
+                    document.body.appendChild(errorMessage);
+                });
+        }
+
+        window.onload = function () {
+            getAttendance();
+        };
+
+        function deleteUser(id) {
+            console.log("Deleting user with ID:", id);
+        }
+
+        function showAddUserPopup() {
+            var modal = document.getElementById("addUserModal");
+            modal.style.display = "block";
+        }
+
+        function hideAddUserPopup() {
+            var modal = document.getElementById("addUserModal");
+            modal.style.display = "none";
+        }
+
+
+
+        function applyChanges() {
+            console.log("Applying changes");
+        }
+
+
+    </script>
+</body>
+
+</html>
