@@ -1,9 +1,9 @@
-Surveillance Project README
+# Surveillance Project README
 
 This repository contains code for a Surveillance Project application. The application allows for surveillance functionalities.
 
 
-Running the App
+## Running the App
 First, navigate to the root directory of the project:
 cd /SurveillanceProject
 
@@ -13,9 +13,9 @@ source myenv/bin/activate
 Run the Flask app using Python 3:
 python3 app.py
 
-Admin Login credentials
+## Admin Login credentials
 admin:admin123
 
-Requirements
+## Requirements
 Python 3.x
 Flask
