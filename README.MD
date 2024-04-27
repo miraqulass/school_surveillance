@@ -1,4 +1,4 @@
-# Surveillance Project README
+# Surveillance Project
 
 This repository contains code for a Surveillance Project application. The application allows for surveillance functionalities.
 
